@@ -24,6 +24,7 @@ jobs:
   tofu-apply:
     name: Tofu Apply
     if: github.event.pull_request.merged == true
+    environment: prod
     runs-on: ubuntu-latest
 
     steps:

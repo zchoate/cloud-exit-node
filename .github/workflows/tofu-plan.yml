@@ -22,6 +22,7 @@ env:
 jobs:
   tofu-plan:
     name: Tofu Plan
+    environment: prod
     runs-on: ubuntu-latest
 
     steps:
