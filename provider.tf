@@ -9,6 +9,10 @@ terraform {
       version = "~> 0.15"
     }
   }
+
+  backend "azurerm" {
+    use_oidc  = true
+  }
 }
 
 provider "digitalocean" {

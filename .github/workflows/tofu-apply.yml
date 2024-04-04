@@ -1,0 +1,48 @@
+name: Tofu Apply
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+  ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+  ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+  DIGITALOCEAN_TOKEN: "${{ secrets.DIGITALOCEAN_TOKEN }}"
+  TAILSCALE_OAUTH_CLIENT_ID: "${{ secrets.TAILSCALE_OAUTH_CLIENT_ID}}"
+  TAILSCALE_OAUTH_CLIENT_SECRET: "${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}"
+
+jobs:
+  tofu-apply:
+    name: Tofu Apply
+    if: github.event.pull_request.merged == true
+    environment: prod
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: opentofu/setup-opentofu@v1
+
+    - name: OpenTofu Init
+      id: init
+      run: |
+        tofu init \
+          -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP }}" \
+          -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
+          -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER_NAME }}" \
+          -backend-config="key=${{ secrets.TF_STATE_KEY }}"
+    
+    - name: OpenTofu Validate
+      id: validate
+      run: tofu validate -no-color
+
+    - name: Tofu Apply
+      run: tofu apply -auto-approve
